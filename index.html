@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A custom hell for lifelong suck-ups. Kiss the nearest butt, dodge the farts.">
+<meta property="og:title" content="Brownnose Inferno">
+<meta property="og:description" content="Kiss the nearest butt, dodge the farts. Beat my score.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Brownnose Inferno</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Rubik:wght@400;600;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Layout: sign + live tally on top, the game stage in the middle, Satan's commentary below. Single dark look by choice. */
+  :root {
+    --void: #1a0606;
+    --ember: #ff5a1f;
+    --lava: #ffb02e;
+    --blood: #b3121b;
+    --fart: #9bd14a;
+    --bone: #f7e6d4;
+    --ash: #c9a89a;
+    --display: "Creepster", "Impact", fantasy;
+    --body: "Rubik", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  html, body { background: var(--void); color: var(--bone); }
+  body {
+    font-family: var(--body);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-block: 14px 24px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 20px; }
+  h1 {
+    font-family: var(--display); font-weight: 400; margin: 0;
+    font-size: clamp(36px, 8vw, 72px); line-height: .9; letter-spacing: .02em;
+    color: var(--ember); text-shadow: 0 0 18px rgba(255,90,31,.55), 0 3px 0 var(--blood);
+  }
+  .sub { margin: 6px 0 0; color: var(--ash); font-size: 14px; max-width: 46ch; }
+  .tally { display: flex; gap: 16px; align-items: end; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .tally div { display: flex; flex-direction: column; }
+  .tally span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ash); }
+  .tally b { font-size: 24px; color: var(--lava); font-weight: 500; }
+  .meter { width: 110px; height: 10px; background: rgba(255,255,255,.1); border-radius: 5px; overflow: hidden; margin-top: 8px; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--fart); transition: width .1s; }
+
+  .stage {
+    position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%;
+    border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
+    box-shadow: 0 0 0 2px var(--blood), 0 0 40px rgba(179,18,27,.5);
+  }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .joy {
+    position: absolute; left: 14px; bottom: 14px; width: 112px; height: 112px; border-radius: 50%;
+    background: rgba(26,6,6,.45); box-shadow: inset 0 0 0 2px rgba(247,230,212,.35);
+    touch-action: none; display: none; z-index: 1;
+  }
+  .knob {
+    position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%;
+    background: rgba(247,230,212,.8); box-shadow: 0 2px 6px rgba(0,0,0,.5); pointer-events: none;
+  }
+  .kissbtn {
+    position: absolute; right: 14px; bottom: 30px; width: 76px; height: 76px; border-radius: 50%; padding: 0;
+    font: 400 22px var(--display); letter-spacing: .04em; background: #ff4f7b; color: var(--void);
+    box-shadow: 0 3px 0 var(--blood); display: none; z-index: 1; touch-action: manipulation;
+  }
+  .kissbtn.on { background: var(--fart); }
+  @media (pointer: coarse) { .joy, .kissbtn { display: block; } }
+  .overlay {
+    position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 20px; text-align: center; background: rgba(26,6,6,.78); backdrop-filter: blur(2px);
+  }
+  .overlay h2 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 7vw, 52px); margin: 0; color: var(--ember); line-height: 1; }
+  .overlay p { margin: 0; max-width: 40ch; color: var(--bone); font-size: 15px; line-height: 1.45; }
+  .name-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  label { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ash); }
+  input {
+    font: 600 18px var(--body); color: var(--bone); background: rgba(0,0,0,.4);
+    border: 1.5px solid var(--ash); border-radius: 4px; padding: 10px 12px; width: min(240px, 70vw); text-align: center;
+  }
+  button {
+    font: 700 16px var(--body); color: var(--void); background: var(--lava);
+    border: 0; padding: 12px 20px; border-radius: 4px; cursor: pointer; min-height: 44px;
+  }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--fart); outline-offset: 2px; }
+
+  .devil { display: flex; gap: 12px; align-items: flex-start; background: rgba(179,18,27,.18); border-left: 3px solid var(--blood); padding: 12px 14px; min-height: 52px; }
+  .devil .who { font-family: var(--display); color: var(--ember); font-size: 22px; line-height: 1; white-space: nowrap; }
+  .devil p { margin: 0; font-size: 15px; line-height: 1.4; min-width: 0; transition: opacity .3s; }
+  .hint { color: var(--ash); font-size: 13px; margin: 0; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .controls .hint { flex: 1 1 260px; min-width: 0; }
+  button.on { background: var(--fart); }
+  button.ghost { background: transparent; color: var(--bone); box-shadow: inset 0 0 0 1.5px var(--ash); }
+  .challenge {
+    font-family: var(--display); font-size: clamp(20px, 4.5vw, 30px) !important; line-height: 1.1 !important;
+    color: var(--lava) !important; max-width: 24ch !important;
+  }
+  #shareLink { width: min(420px, 85vw); font: 500 12px var(--mono); text-align: left; }
+  .touch-only { display: none; }
+  @media (pointer: coarse) { .touch-only { display: inline; } .mouse-only { display: none; } }
+  @media (max-width: 560px) {
+    .stage { aspect-ratio: 3 / 4; }
+    .tally { gap: 12px; } .tally b { font-size: 20px; } .meter { width: 80px; }
+    .sub { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Brownnose Inferno</h1>
+      <p class="sub">A custom hell for one lifelong suck-up. Butts everywhere, all of them armed. Kiss them for points, dodge what comes after.</p>
+    </div>
+    <div class="tally" aria-live="polite">
+      <div><span>Kissed</span><b id="kissed">0</b></div>
+      <div><span>Survived</span><b id="time">0s</b></div>
+      <div><span>Stink</span><div class="meter"><i id="stink"></i></div></div>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="c" aria-label="Game: steer the damned suck-up around hell, kiss butts and dodge green fart clouds"></canvas>
+    <div class="joy" id="joy" aria-hidden="true"><div class="knob" id="knob"></div></div>
+    <button class="kissbtn" id="kissbtn" aria-label="Run to the nearest butt">KISS</button>
+    <div class="overlay" id="start">
+      <p class="challenge" id="challenge" hidden></p>
+      <h2>Who's been damned?</h2>
+      <p>All their life they kissed up. Now it's the only thing they can do. Kiss butts for points, but every butt fights back. Too much stink and they pass out.</p>
+      <div class="name-row">
+        <label for="name" style="flex-basis:100%">Name of the damned</label>
+        <input id="name" maxlength="16" placeholder="Type a name" autocomplete="off">
+      </div>
+      <button id="go">Descend</button>
+      <p class="hint"><span class="mouse-only">Arrow keys or WASD to move.</span><span class="touch-only">Joystick at the bottom-left to move, KISS button to run to the target.</span> Touch a butt to kiss it.</p>
+    </div>
+    <div class="overlay" id="dead" hidden>
+      <h2 id="deadTitle">Passed out</h2>
+      <p id="deadText"></p>
+      <div class="name-row">
+        <button id="again">Wake up. Again.</button>
+        <button id="share" class="ghost">Share my score</button>
+      </div>
+      <p class="hint" id="shareStatus" aria-live="polite"></p>
+      <input id="shareLink" readonly hidden aria-label="Score link to copy">
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="auto">Kiss the nearest one</button>
+    <p class="hint">Only the butt marked <b>KISS ME</b> counts. It's always the nearest one. The button runs you there (or press Space), but you'll still need to steer around the farts.</p>
+  </div>
+
+  <div class="devil"><div class="who">Satan:</div><p id="line">Welcome. You spent forty years kissing up. Down here we skip the small talk.</p></div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('c'), ctx = cv.getContext('2d'), stage = $('stage');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, S = 1;
+
+  const SKIN = ['#f2c2a0', '#e0a47e', '#c98a63', '#a86b4a', '#7d4b31', '#f5d0b8', '#ffb3a7'];
+  const NOISES = ['PFFFT', 'BRAAAP', 'toot', 'FRRRT', 'pfft', 'THBBT', 'blorp'];
+  const COUGH = ['*cough*', 'ugh', 'my eyes', 'GAAH', '*gag*'];
+  const LINES = [
+    "{n} told the boss \"great idea\" 14,302 times. Here's the 14,303rd.",
+    "Remember laughing at the VP's synergy joke, {n}? Pucker up.",
+    "{n} cc'd management on every email. These are the managers now.",
+    "\"Happy to help!\" Prove it, {n}.",
+    "{n}'s LinkedIn endorsements were all for \"Teamwork.\" Get to work.",
+    "Every butt here is someone {n} once called \"a visionary.\"",
+    "{n} brought donuts to every meeting for 22 years. They remember.",
+    "No, {n}, you can't put this on your résumé.",
+    "\"I'm just a team player,\" said {n}. Behold the team.",
+    "Faster, {n}. The butts are getting impatient.",
+  ];
+  const DEATH = [
+    "{n} passed out face-first in the brimstone. Satan has already scheduled a follow-up.",
+    "The stink won. {n} is revived by a demon holding smelling salts and a performance review.",
+    "{n} fainted. Hell has an unlimited respawn policy. Lucky {n}.",
+  ];
+
+  let name = 'The Suck-Up';
+  try { name = localStorage.getItem('bi-name') || name; } catch (e) {}
+  $('name').value = name === 'The Suck-Up' ? '' : name;
+  const fill = s => s.replaceAll('{n}', name);
+
+  let butts = [], clouds = [], words = [], embers = [], hearts = [];
+  let t = 0, play = false, kissed = 0, alive = 0, stink = 0, best = 0, coughCd = 0;
+  const me = { x: 0, y: 0, face: 1, step: 0, gag: 0, kiss: 0 };
+  const keys = new Set();
+  let drag = null, target = null, auto = false, joy = null;
+
+  function pickTarget(skip) {
+    let bestB = null, d = 1e9;
+    for (const b of butts) {
+      if (b === skip) continue;
+      const dd = Math.hypot(b.x - me.x, b.dy - (me.y - 50 * S));
+      if (dd < d) { d = dd; bestB = b; }
+    }
+    target = bestB;
+  }
+  function setAuto(on) { auto = on; $('auto').classList.toggle('on', on); $('kissbtn').classList.toggle('on', on); }
+
+  function resize() {
+    const r = stage.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height; S = Math.max(.75, Math.min(W, H) / 520);
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!butts.length || !play) layout();
+    me.x = Math.min(Math.max(me.x, 20), W - 20); me.y = Math.min(Math.max(me.y, 70 * S), H * .88);
+  }
+
+  function layout() {
+    me.x = W / 2; me.y = H * .8;
+    const n = W < 560 ? 6 : 9;
+    const base = Math.max(22, Math.min(W, H) * 0.07);
+    butts = [];
+    let tries = 0;
+    while (butts.length < n && tries++ < 800) {
+      const r = base * (0.8 + Math.random() * 0.5);
+      const x = r * 1.4 + Math.random() * (W - r * 2.8);
+      const y = r * 1.2 + 10 + Math.random() * (H * 0.66 - r * 2.4);
+      if (butts.every(b => Math.hypot(b.x - x, b.y - y) > (b.r + r) * 1.6) && Math.hypot(me.x - x, me.y - y) > r * 3) {
+        butts.push({ x, y, r, ph: Math.random() * 6.28, skin: SKIN[(Math.random() * SKIN.length) | 0],
+          horns: Math.random() < 0.35, cd: 1.5 + Math.random() * 4, wob: 0, blush: 0, kcd: 0, dy: y });
+      }
+    }
+  }
+
+  function shoot(b, big) {
+    const dx = me.x - b.x, dy = (me.y - 40 * S) - b.dy, d = Math.hypot(dx, dy) || 1;
+    const sp = (55 + Math.min(alive, 120) * 1.1) * S;
+    if (big) {
+      // point-blank ring after a kiss
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        clouds.push({ x: b.x, y: b.dy + b.r * .5, vx: Math.cos(a) * sp * .9, vy: Math.sin(a) * sp * .9, r: 12 * S, life: 3, home: 0 });
+      }
+    } else {
+      clouds.push({ x: b.x, y: b.dy + b.r * .5, vx: dx / d * sp, vy: dy / d * sp, r: (14 + Math.random() * 8) * S, life: 5, home: .6 });
+    }
+    words.push({ x: b.x, y: b.dy + b.r * 1.2, txt: NOISES[(Math.random() * NOISES.length) | 0], life: 1, big });
+    b.wob = 1;
+  }
+
+  // ---------- drawing ----------
+  function drawBg() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#2a0505'); g.addColorStop(.55, '#6b0d0a'); g.addColorStop(1, '#c2360c');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(20,2,2,.55)';
+    ctx.beginPath(); ctx.moveTo(0, H * .7);
+    for (let x = 0; x <= W; x += 40) ctx.lineTo(x, H * .62 - Math.abs(Math.sin(x * .013) * H * .12) - (x % 120 === 0 ? H * .08 : 0));
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+    ctx.fillStyle = '#ff6a00';
+    ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 10) ctx.lineTo(x, H * .92 + Math.sin(x * .03 + t * 2) * 4 + Math.sin(x * .07 - t * 3) * 2);
+    ctx.lineTo(W, H); ctx.fill();
+    ctx.fillStyle = 'rgba(255,200,60,.6)';
+    for (let i = 0; i < 6; i++) {
+      const bx = (i * 173 + t * 20) % W, s = (Math.sin(t * 3 + i) + 1) * 3;
+      ctx.beginPath(); ctx.arc(bx, H * .95, s, 0, 7); ctx.fill();
+    }
+  }
+
+  function drawButt(b) {
+    const sq = 1 + Math.sin(b.wob * 20) * b.wob * 0.12;
+    const r = b.r;
+    ctx.save(); ctx.translate(b.x, b.dy); ctx.scale(sq, 2 - sq);
+    ctx.fillStyle = 'rgba(0,0,0,.25)';
+    ctx.beginPath(); ctx.ellipse(0, r * 1.15, r * 1.1, r * .2, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = b.skin;
+    ctx.beginPath(); ctx.arc(-r * .48, 0, r * .62, 0, 7); ctx.arc(r * .48, 0, r * .62, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -r * .1, r * .9, r * .5, 0, 0, 7); ctx.fill();
+    if (b.blush > 0) {
+      ctx.fillStyle = `rgba(220,20,60,${b.blush * .85})`;
+      ctx.beginPath(); ctx.ellipse(-r * .45, r * .05, r * .14, r * .08, -.3, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,.28)';
+    ctx.beginPath(); ctx.ellipse(-r * .62, -r * .25, r * .16, r * .1, -.6, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * .34, -r * .25, r * .16, r * .1, -.6, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(60,20,10,.75)'; ctx.lineWidth = Math.max(1.5, r * .06); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, -r * .35); ctx.quadraticCurveTo(r * .04, r * .2, 0, r * .55); ctx.stroke();
+    if (b.horns) {
+      ctx.fillStyle = '#d10f1f';
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * r * .6, -r * .5); ctx.lineTo(s * r * .85, -r * 1.05); ctx.lineTo(s * r * .35, -r * .58); ctx.fill(); }
+    }
+    // the one you're supposed to kiss
+    if (play && b === target) {
+      const bounce = Math.sin(t * 6) * 4;
+      ctx.fillStyle = '#ff4f7b';
+      ctx.beginPath(); ctx.moveTo(0, -r * 1.05 + bounce); ctx.lineTo(-r * .22, -r * 1.4 + bounce); ctx.lineTo(r * .22, -r * 1.4 + bounce); ctx.fill();
+      ctx.font = `${Math.max(14, r * .5)}px Creepster, Impact, fantasy`; ctx.textAlign = 'center';
+      ctx.lineWidth = 4; ctx.strokeStyle = '#1a0606'; ctx.strokeText('KISS ME', 0, -r * 1.5 + bounce);
+      ctx.fillText('KISS ME', 0, -r * 1.5 + bounce);
+    }
+    // warning glow just before it fires
+    if (play && b.cd < .5) {
+      ctx.strokeStyle = `rgba(155,209,74,${(.5 - b.cd) * 1.6})`; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, r * .3, r * 1.05, 0, 7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawMe(moving) {
+    const s = S;
+    const leg = moving ? Math.sin(me.step) * 8 * s : 0;
+    const gag = me.gag > 0;
+    ctx.save(); ctx.translate(me.x, me.y);
+    // name tag
+    ctx.font = `600 ${12 * s}px Rubik, system-ui, sans-serif`; ctx.textAlign = 'center';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(26,6,6,.9)'; ctx.strokeText(name, 0, -74 * s);
+    ctx.fillStyle = '#f7e6d4'; ctx.fillText(name, 0, -74 * s);
+    ctx.scale(me.face, 1);
+    ctx.strokeStyle = '#1b1b1b'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, -18 * s); ctx.lineTo(leg, 0); ctx.moveTo(0, -18 * s); ctx.lineTo(-leg, 0); ctx.stroke();
+    ctx.fillStyle = '#e9e4da';
+    ctx.beginPath(); ctx.roundRect(-8 * s, -42 * s, 16 * s, 26 * s, 4 * s); ctx.fill();
+    ctx.fillStyle = '#2147a8';
+    ctx.beginPath(); ctx.moveTo(0, -40 * s); ctx.lineTo(3 * s, -26 * s); ctx.lineTo(0, -22 * s); ctx.lineTo(-3 * s, -26 * s); ctx.fill();
+    const reach = me.kiss > 0 ? -14 : moving ? Math.sin(me.step) * 6 : 0;
+    ctx.beginPath(); ctx.moveTo(0, -38 * s); ctx.lineTo(12 * s, (-26 + reach) * s); ctx.moveTo(0, -38 * s); ctx.lineTo(-10 * s, (-24 - reach * .5) * s); ctx.stroke();
+    const lean = me.kiss > 0 ? 5 * s : 0;
+    ctx.fillStyle = gag ? '#a9cf5a' : '#f1c9a5';
+    ctx.beginPath(); ctx.arc(lean, -54 * s, 12 * s, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3b2a1e';
+    ctx.beginPath(); ctx.arc(lean, -57 * s, 12 * s, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
+    ctx.fillStyle = '#111';
+    if (gag) { ctx.font = `${10 * s}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText('x  x', lean + 2 * s, -53 * s); }
+    else { ctx.beginPath(); ctx.arc(lean + 4 * s, -56 * s, 1.6 * s, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#d0213a';
+    const pucker = me.kiss > 0 ? 1.6 : 1 + Math.sin(t * 6) * .1;
+    ctx.beginPath(); ctx.ellipse(lean + 11 * s, -49 * s, 3.2 * s * pucker, 2.6 * s, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFx(dt) {
+    for (const e of embers) {
+      e.y -= e.v * dt; e.x += Math.sin(t + e.p) * 10 * dt;
+      if (e.y < -5) { e.y = H + 5; e.x = Math.random() * W; }
+      ctx.fillStyle = `rgba(255,${150 + (e.p * 20 | 0)},40,${.5 + Math.sin(t * 4 + e.p) * .3})`;
+      ctx.fillRect(e.x, e.y, 2, 2);
+    }
+    for (const c of clouds) {
+      const a = Math.min(1, c.life) * .6;
+      ctx.fillStyle = `rgba(155,209,74,${a})`;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath(); ctx.arc(c.x + Math.cos(t * 3 + i * 2) * c.r * .35, c.y + Math.sin(t * 3 + i * 2) * c.r * .35, c.r * .8, 0, 7); ctx.fill();
+      }
+    }
+    hearts = hearts.filter(h => h.life > 0);
+    for (const h of hearts) {
+      h.life -= dt * .8; h.y -= 40 * dt; h.x += Math.sin(t * 5 + h.p) * 20 * dt;
+      ctx.globalAlpha = Math.max(0, h.life); ctx.fillStyle = '#ff4f7b';
+      ctx.font = `${h.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText('❤', h.x, h.y);
+    }
+    ctx.globalAlpha = 1;
+    words = words.filter(w => w.life > 0);
+    for (const w of words) {
+      w.life -= dt * .8; w.y += (w.up ? -30 : 15) * dt;
+      ctx.globalAlpha = Math.max(0, Math.min(1, w.life * 1.5));
+      ctx.font = `${(w.big ? 28 : 17) * Math.min(S, 1.2)}px Creepster, Impact, fantasy`; ctx.textAlign = 'center';
+      ctx.lineWidth = 4; ctx.strokeStyle = '#1a0606'; ctx.strokeText(w.txt, w.x, w.y);
+      ctx.fillStyle = w.color || '#c8f06a'; ctx.fillText(w.txt, w.x, w.y);
+    }
+    ctx.globalAlpha = 1;
+    if (drag) {
+      ctx.strokeStyle = 'rgba(247,230,212,.35)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(drag.x, drag.y, 18, 0, 7); ctx.stroke();
+    }
+  }
+
+  // ---------- update ----------
+  function update(dt) {
+    t += dt;
+    for (const b of butts) {
+      b.dy = b.y + Math.sin(t * 1.6 + b.ph) * 5;
+      b.wob = Math.max(0, b.wob - dt * 1.5);
+      b.blush = Math.max(0, b.blush - dt * .15);
+      b.kcd = Math.max(0, b.kcd - dt);
+      if (!play) { b.cd -= dt; if (b.cd <= 0) { b.cd = 5 + Math.random() * 5; words.push({ x: b.x, y: b.dy + b.r * 1.2, txt: NOISES[(Math.random() * NOISES.length) | 0], life: 1 }); b.wob = 1; } continue; }
+      b.cd -= dt;
+      if (b.cd <= 0) {
+        shoot(b, false);
+        const gap = Math.max(1.6, 5.5 - alive * .03);
+        b.cd = gap * (reduce ? 1.4 : 1) + Math.random() * gap;
+      }
+    }
+
+    // clouds drift, home in a little, then fade
+    for (const c of clouds) {
+      c.life -= dt;
+      if (c.home && play) {
+        const dx = me.x - c.x, dy = (me.y - 40 * S) - c.y, d = Math.hypot(dx, dy) || 1;
+        c.vx += dx / d * 30 * c.home * dt * S; c.vy += dy / d * 30 * c.home * dt * S;
+      }
+      c.x += c.vx * dt; c.y += c.vy * dt; c.r += 3 * dt * S;
+    }
+    clouds = clouds.filter(c => c.life > 0 && c.x > -60 && c.x < W + 60 && c.y > -60 && c.y < H + 60);
+
+    let moving = false;
+    if (play) {
+      alive += dt;
+      let mx = 0, my = 0;
+      if (keys.has('ArrowLeft') || keys.has('KeyA')) mx -= 1;
+      if (keys.has('ArrowRight') || keys.has('KeyD')) mx += 1;
+      if (keys.has('ArrowUp') || keys.has('KeyW')) my -= 1;
+      if (keys.has('ArrowDown') || keys.has('KeyS')) my += 1;
+      const sp = 210 * S;
+      if (drag) {
+        // character runs toward the finger, kept a bit above it so the finger doesn't hide him
+        const tx = drag.x, ty = drag.y - (drag.touch ? 30 * S : 0) + 20 * S;
+        const dx = tx - me.x, dy = ty - me.y, d = Math.hypot(dx, dy);
+        if (d > 3) { mx = dx / d * Math.min(1, d / 30); my = dy / d * Math.min(1, d / 30); }
+      }
+      if (joy && Math.hypot(joy.x, joy.y) > .15) { mx = joy.x; my = joy.y; }
+      if (mx || my) { if (auto) setAuto(false); }
+      else if (auto && target) {
+        // run so the lips line up with the target's cheek
+        const tx = target.x - target.r * .5 - 11 * S, ty = target.dy + 50 * S;
+        const dx = tx - me.x, dy = ty - me.y, d = Math.hypot(dx, dy);
+        if (d > 2) { mx = dx / d * Math.min(1, d / 20); my = dy / d * Math.min(1, d / 20); }
+      }
+      const m = Math.hypot(mx, my);
+      if (m > 0) {
+        const k = m > 1 ? 1 / m : 1;
+        me.x += mx * k * sp * dt; me.y += my * k * sp * dt;
+        if (Math.abs(mx) > .1) me.face = mx > 0 ? 1 : -1;
+        me.step += dt * 14; moving = true;
+      }
+      me.x = Math.min(Math.max(me.x, 14 * S), W - 14 * S);
+      me.y = Math.min(Math.max(me.y, 70 * S), H * .9);
+
+      // kiss: touch a butt with your face
+      const hx = me.x + me.face * 11 * S, hy = me.y - 50 * S;
+      for (const b of butts) {
+        if (b !== target || b.kcd > 0) continue;
+        if (Math.hypot(b.x - hx, b.dy - hy) < b.r * .95) {
+          pickTarget(b); setAuto(false);
+          b.kcd = 2.2; b.blush = 1; me.kiss = .35; kissed++;
+          $('kissed').textContent = kissed;
+          words.push({ x: hx, y: hy - 20 * S, txt: 'MWAH', life: 1, up: true, color: '#ff7aa0' });
+          for (let i = 0; i < 4; i++) hearts.push({ x: hx, y: hy, life: 1, p: Math.random() * 6, size: 12 + Math.random() * 8 });
+          setTimeout(() => { if (play) shoot(b, true); }, 250);
+          if (kissed % 5 === 0) say(LINES[(Math.random() * LINES.length) | 0]);
+        }
+      }
+      me.kiss = Math.max(0, me.kiss - dt);
+
+      // stink damage
+      let hit = 0;
+      const px = me.x, py = me.y - 36 * S;
+      for (const c of clouds) if (c.life > .4 && Math.hypot(c.x - px, c.y - py) < c.r + 12 * S) hit++;
+      if (hit) {
+        stink += hit * 55 * dt; me.gag = .4; coughCd -= dt;
+        if (coughCd <= 0) { coughCd = .7; words.push({ x: me.x, y: me.y - 85 * S, txt: COUGH[(Math.random() * COUGH.length) | 0], life: .8, up: true, color: '#f7e6d4' }); }
+      } else stink = Math.max(0, stink - 9 * dt);
+      me.gag = Math.max(0, me.gag - dt);
+      $('stink').style.width = Math.min(100, stink) + '%';
+      $('time').textContent = Math.floor(alive) + 's';
+      if (stink >= 100) die();
+    }
+    return moving;
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const moving = update(dt);
+    drawBg();
+    for (const b of butts) drawButt(b);
+    drawMe(moving);
+    drawFx(dt);
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- game flow ----------
+  const lineEl = $('line');
+  let li = 0, sayTimer;
+  function say(txt) {
+    lineEl.style.opacity = 0;
+    setTimeout(() => { lineEl.textContent = fill(txt); lineEl.style.opacity = 1; }, 250);
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => say(LINES[li++ % LINES.length]), 8000);
+  }
+
+  function start() {
+    const v = $('name').value.trim();
+    name = v || 'The Suck-Up';
+    try { localStorage.setItem('bi-name', v); } catch (e) {}
+    $('start').hidden = true; $('dead').hidden = true;
+    kissed = 0; alive = 0; stink = 0; clouds = [];
+    $('kissed').textContent = 0;
+    layout();
+    butts.forEach(b => { b.cd = 1.5 + Math.random() * 3; b.dy = b.y; });
+    pickTarget(); setAuto(false);
+    play = true;
+    say(`Welcome, {n}. You spent your whole life kissing up. Keep going.`);
+  }
+  function die() {
+    play = false; drag = null; keys.clear(); setAuto(false); joyEnd();
+    best = Math.max(best, kissed);
+    $('deadTitle').textContent = `${name} passed out`;
+    $('deadText').textContent = fill(DEATH[(Math.random() * DEATH.length) | 0]) +
+      ` Kissed ${kissed} ${kissed === 1 ? 'ass' : 'asses'}, lasted ${Math.floor(alive)}s. Best this session: ${best}.`;
+    $('shareStatus').textContent = ''; $('shareLink').hidden = true;
+    $('dead').hidden = false;
+    $('again').focus();
+  }
+
+  $('go').addEventListener('click', start);
+  $('name').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+  $('again').addEventListener('click', start);
+
+  // ---------- score links ----------
+  // A shared link looks like ?n=Name&k=23&t=41 and opens with that score as a challenge.
+  const q = new URLSearchParams(location.search);
+  if (q.has('n') && q.has('k')) {
+    const cn = q.get('n').slice(0, 16), ck = Math.max(0, parseInt(q.get('k'), 10) || 0), ct = Math.max(0, parseInt(q.get('t'), 10) || 0);
+    $('challenge').textContent = `${cn} kissed ${ck} ${ck === 1 ? 'ass' : 'asses'}${ct ? ` and lasted ${ct}s` : ''}. Think you can suck up harder?`;
+    $('challenge').hidden = false;
+  }
+
+  $('share').addEventListener('click', async () => {
+    const t = Math.floor(alive);
+    const url = location.origin + location.pathname + '?' + new URLSearchParams({ n: name, k: kissed, t });
+    const text = `${name} kissed ${kissed} ${kissed === 1 ? 'ass' : 'asses'} in Brownnose Inferno and lasted ${t}s. Beat that:`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Brownnose Inferno', text, url }); $('shareStatus').textContent = 'Shared.'; return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      $('shareStatus').textContent = 'Link copied. Paste it anywhere.';
+    } catch (e) {
+      const box = $('shareLink');
+      box.value = `${text} ${url}`; box.hidden = false; box.focus(); box.select();
+      $('shareStatus').textContent = 'Copy this:';
+    }
+  });
+
+  $('auto').addEventListener('click', () => { if (play) setAuto(!auto); });
+  $('kissbtn').addEventListener('click', () => { if (play) setAuto(!auto); });
+
+  // touch joystick
+  const joyEl = $('joy'), knob = $('knob');
+  function joyMove(e) {
+    const r = joyEl.getBoundingClientRect(), R = r.width / 2;
+    let dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R);
+    const d = Math.hypot(dx, dy), max = R - 10;
+    if (d > max) { dx = dx / d * max; dy = dy / d * max; }
+    knob.style.transform = `translate(${dx}px, ${dy}px)`;
+    joy = { x: dx / max, y: dy / max };
+  }
+  joyEl.addEventListener('pointerdown', e => { joyEl.setPointerCapture(e.pointerId); joyMove(e); e.preventDefault(); });
+  joyEl.addEventListener('pointermove', e => { if (joy) joyMove(e); });
+  const joyEnd = () => { joy = null; knob.style.transform = ''; };
+  joyEl.addEventListener('pointerup', joyEnd); joyEl.addEventListener('pointercancel', joyEnd);
+  addEventListener('keydown', e => {
+    if (!play) return;
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') { e.preventDefault(); setAuto(true); return; }
+    if (e.code.startsWith('Arrow') || ['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) { keys.add(e.code); e.preventDefault(); }
+  });
+  addEventListener('keyup', e => keys.delete(e.code));
+  addEventListener('blur', () => keys.clear());
+
+  const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, touch: e.pointerType !== 'mouse' }; };
+  cv.addEventListener('pointerdown', e => { if (!play || e.pointerType !== 'mouse') return; cv.setPointerCapture(e.pointerId); drag = pos(e); e.preventDefault(); });
+  cv.addEventListener('pointermove', e => { if (drag) drag = pos(e); });
+  const end = () => { drag = null; };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+
+  for (let i = 0; i < (reduce ? 15 : 45); i++) embers.push({ x: Math.random() * 2000, y: Math.random() * 1200, v: 15 + Math.random() * 40, p: Math.random() * 6 });
+  new ResizeObserver(resize).observe(stage);
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
